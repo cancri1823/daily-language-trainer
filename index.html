@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Daily Language Trainer</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌍</text></svg>">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#F5F4F0;--card:#FFF;--muted:#F0EEE9;--input:#F7F6F3;
+  --t1:#1A1A18;--t2:#6B6860;--t3:#9B9890;
+  --bd:rgba(0,0,0,.10);--bd2:rgba(0,0,0,.18);
+  --green:#1D9E75;--gl:#E1F5EE;--gd:#0F6E56;
+  --blue:#378ADD;--bl:#E6F1FB;--bld:#185FA5;
+  --amber:#BA7517;--al:#FAEEDA;--ad:#854F0B;
+  --pur:#3C3489;--pl:#EEEDFE;
+  --red:#E24B4A;--rl:#FCEBEB;
+  --r8:8px;--r12:12px;--sh:0 1px 4px rgba(0,0,0,.07);
+}
+@media(prefers-color-scheme:dark){:root{
+  --bg:#1A1918;--card:#242321;--muted:#2E2C2A;--input:#2A2826;
+  --t1:#F0EDE8;--t2:#A09D98;--t3:#6B6860;
+  --bd:rgba(255,255,255,.09);--bd2:rgba(255,255,255,.18);
+  --gl:#0A3328;--gd:#5DCAA5;--bl:#0C2C4A;--bld:#85B7EB;
+  --al:#3A2A0A;--ad:#EF9F27;--pl:#1E1C40;--pur:#AFA9EC;--rl:#3A1010
+}}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans TC",sans-serif;
+  background:var(--bg);color:var(--t1);min-height:100vh;line-height:1.6;-webkit-font-smoothing:antialiased}
+.shell{max-width:700px;margin:0 auto;padding:0 1rem 5rem}
+/* Nav */
+.nav{display:flex;align-items:center;justify-content:space-between;padding:1.25rem 0 .75rem}
+.nav-brand{display:flex;align-items:center;gap:10px}
+.nav-icon{width:36px;height:36px;background:var(--amber);border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px}
+.nav-title{font-size:16px;font-weight:600}
+.nav-sub{font-size:11px;color:var(--t2)}
+.streak{display:flex;align-items:center;gap:5px;font-size:12px;font-weight:500;padding:5px 12px;background:var(--al);color:var(--ad);border-radius:99px}
+/* Progress */
+.prog-wrap{margin-bottom:1.25rem}
+.prog-steps{display:flex;gap:5px;margin-bottom:6px}
+.step-pill{flex:1;height:5px;border-radius:99px;background:var(--bd);transition:background .4s}
+.step-pill.done{background:var(--green)}.step-pill.active{background:var(--blue)}
+.prog-meta{display:flex;justify-content:space-between;font-size:11px;color:var(--t3)}
+/* Cards */
+.card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r12);padding:1.25rem 1.5rem;margin-bottom:.85rem;box-shadow:var(--sh)}
+.card-muted{background:var(--muted);border:1px solid var(--bd);border-radius:var(--r12);padding:1rem 1.25rem;margin-bottom:.85rem}
+.card-left{border-left:3px solid var(--green);border-radius:0 var(--r12) var(--r12) 0}
+/* Lang Tabs */
+.lang-tabs{display:flex;gap:8px;margin-bottom:1.25rem;overflow-x:auto;padding-bottom:5px}
+.lang-tab{flex-shrink:0;padding:6px 14px;border:1px solid var(--bd2);border-radius:99px;background:var(--input);color:var(--t2);font-size:13px;font-weight:500;cursor:pointer;transition:all .15s}
+.lang-tab.active{background:var(--green);color:#fff;border-color:var(--green)}
+/* Badge */
+.badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:500;padding:4px 12px;border-radius:99px;margin-bottom:.9rem}
+.badge-green{background:var(--gl);color:var(--gd)}
+.badge-blue{background:var(--bl);color:var(--bld)}
+.badge-amber{background:var(--al);color:var(--ad)}
+/* Buttons */
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;padding:10px 18px;border-radius:var(--r8);font-size:14px;font-weight:500;cursor:pointer;transition:opacity .15s,transform .1s,background .15s;border:none;white-space:nowrap}
+.btn:active{transform:scale(.98)}.btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-primary{background:var(--green);color:#fff}.btn-primary:hover:not(:disabled){opacity:.88}
+.btn-ghost{background:transparent;color:var(--t1);border:1px solid var(--bd2)}.btn-ghost:hover:not(:disabled){background:var(--muted)}
+.btn-sm{padding:7px 14px;font-size:13px}
+.btn-row{display:flex;gap:10px;margin-top:1rem}.btn-row .btn{flex:1}
+/* Source */
+.source-tabs{display:flex;gap:8px;margin-bottom:1rem}
+.tab-btn{flex:1;padding:10px;border:1px solid var(--bd2);border-radius:var(--r8);background:transparent;color:var(--t2);font-size:14px;font-weight:500;cursor:pointer;transition:all .15s;text-align:center}
+.tab-btn.active{background:var(--green);color:#fff;border-color:var(--green)}
+.url-input{width:100%;padding:11px 14px;border:1px solid var(--bd2);border-radius:var(--r8);font-size:14px;background:var(--input);color:var(--t1);outline:none;font-family:inherit}
+.url-input:focus{border-color:var(--green)}
+.upload-zone{border:2px dashed var(--bd2);border-radius:var(--r12);padding:2rem;text-align:center;cursor:pointer;transition:border-color .2s,background .2s;color:var(--t2);font-size:14px;display:block}
+.upload-zone:hover,.upload-zone.drag{border-color:var(--green);background:var(--gl)}
+.upload-zone input{display:none}
+.upload-filename{margin-top:.75rem;font-size:13px;color:var(--gd);font-weight:500}
+/* Article */
+.article-eyebrow{font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--t3);margin-bottom:.5rem}
+.article-headline{font-size:19px;font-weight:600;line-height:1.38;margin-bottom:.75rem}
+.article-body{font-size:15px;line-height:1.85;color:var(--t2)}
+.word-hl{cursor:pointer;border-bottom:1.5px dashed var(--green);transition:background .15s;display:inline}
+.word-hl:hover{background:var(--gl)}
+/* Vocab */
+.vocab-label{font-size:11px;color:var(--t3);margin-bottom:6px;margin-top:1.1rem}
+.vocab-row{display:flex;flex-wrap:wrap;gap:6px}
+.vocab-chip{font-size:12px;font-weight:500;padding:5px 12px;background:var(--pl);color:var(--pur);border-radius:99px;cursor:pointer;transition:opacity .15s;user-select:none;border:none}
+.vocab-chip:hover{opacity:.75}
+/* TTS */
+.tts-bar{display:flex;align-items:center;gap:8px;margin-top:1rem;padding-top:1rem;border-top:1px solid var(--bd);flex-wrap:wrap}
+.speed-sel{font-size:12px;padding:5px 8px;border-radius:var(--r8);border:1px solid var(--bd2);background:var(--input);color:var(--t1);cursor:pointer}
+/* Word popup */
+.word-popup{position:fixed;z-index:999;background:var(--card);border:1px solid var(--bd2);border-radius:var(--r12);padding:1rem 1.25rem;box-shadow:0 8px 32px rgba(0,0,0,.18);max-width:280px;font-size:14px;line-height:1.6;display:none}
+.word-popup-word{font-size:17px;font-weight:600;margin-bottom:4px}
+.word-popup-pos{font-size:11px;color:var(--t3);margin-bottom:6px}
+.word-popup-close{float:right;background:none;border:none;cursor:pointer;font-size:16px;color:var(--t3);margin-top:-4px}
+/* Q */
+.q-num{font-size:11px;color:var(--t3);margin-bottom:5px}
+.q-text{font-size:17px;font-weight:500;line-height:1.45;margin-bottom:.5rem}
+.q-hint{font-size:13px;color:var(--t2);padding:8px 12px;background:var(--muted);border-radius:var(--r8);margin-bottom:1rem}
+.example-label{font-size:11px;color:var(--t3);margin-bottom:5px}
+.example-chip{display:inline-flex;align-items:center;gap:5px;font-size:13px;padding:6px 12px;border:1px dashed var(--bd2);border-radius:var(--r8);color:var(--t2);cursor:pointer;transition:border-color .15s,color .15s;font-style:italic;background:none}
+.example-chip:hover{border-color:var(--green);color:var(--gd)}
+/* Mic */
+.mic-section{background:var(--muted);border-radius:var(--r12);padding:1.25rem;display:flex;flex-direction:column;align-items:center;gap:.75rem;margin-bottom:.85rem}
+.mic-btn{width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;font-size:28px;display:flex;align-items:center;justify-content:center;transition:transform .15s}
+.mic-btn.idle{background:var(--gl)}.mic-btn.recording{background:var(--rl);animation:mic-pulse 1.2s infinite}
+.mic-btn:hover{transform:scale(1.07)}
+@keyframes mic-pulse{0%,100%{box-shadow:0 0 0 0 rgba(226,75,74,.35)}50%{box-shadow:0 0 0 14px rgba(226,75,74,0)}}
+.mic-status{font-size:13px;color:var(--t3);text-align:center;line-height: 1.5;}
+.mic-timer{font-size:22px;font-weight:600;color:var(--red);font-variant-numeric:tabular-nums}
+.waveform{display:flex;align-items:center;gap:3px;height:28px}
+.wave-bar{width:3px;border-radius:99px;background:var(--red);animation:wave .8s ease-in-out infinite}
+.wave-bar:nth-child(1){animation-delay:0s;height:8px}.wave-bar:nth-child(2){animation-delay:.1s;height:16px}
+.wave-bar:nth-child(3){animation-delay:.2s;height:22px}.wave-bar:nth-child(4){animation-delay:.3s;height:14px}
+.wave-bar:nth-child(5){animation-delay:.4s;height:20px}.wave-bar:nth-child(6){animation-delay:.3s;height:12px}
+.wave-bar:nth-child(7){animation-delay:.2s;height:18px}
+@keyframes wave{0%,100%{transform:scaleY(.5)}50%{transform:scaleY(1)}}
+.transcript-box{width:100%;min-height:90px;padding:12px 14px;border:1px solid var(--bd2);border-radius:var(--r8);font-size:15px;line-height:1.65;background:var(--input);color:var(--t1);resize:vertical;font-family:inherit;outline:none;transition:border-color .15s}
+.transcript-box:focus{border-color:var(--green)}
+/* Feedback */
+.fb-wrap{border:1px solid var(--bd);border-radius:var(--r12);overflow:hidden;margin-top:1rem;box-shadow:var(--sh)}
+.fb-head{display:flex;align-items:center;gap:8px;padding:11px 16px;background:var(--muted);border-bottom:1px solid var(--bd);font-size:13px;font-weight:500}
+.fb-body{padding:1rem 1.25rem;font-size:14px;line-height:1.8}
+.fb-body p{margin-bottom:.7rem}.fb-body p:last-child{margin-bottom:0}
+.fb-better{color:var(--gd);font-style:italic;display:block;margin-top:3px}
+.score-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 1.25rem 1rem}
+.score-cell{text-align:center;padding:10px 6px;background:var(--muted);border-radius:var(--r8)}
+.score-val{font-size:22px;font-weight:600}.score-lbl{font-size:11px;color:var(--t2);margin-top:2px}
+.c-green{color:var(--green)}.c-blue{color:var(--blue)}.c-amber{color:var(--amber)}
+/* Review / Done */
+.review-card{background:var(--card);border:1px solid var(--bd);border-radius:var(--r12);padding:1rem 1.25rem;margin-bottom:.75rem}
+.done-screen{text-align:center;padding:2.5rem 1.5rem}
+.done-trophy{font-size:56px;margin-bottom:1rem}
+.done-title{font-size:22px;font-weight:600;margin-bottom:.5rem}
+.done-sub{font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:1.5rem}
+.done-stats{display:flex;justify-content:center;gap:2rem;margin:1.25rem 0 1.5rem}
+.done-stat-val{font-size:28px;font-weight:600}.done-stat-lbl{font-size:11px;color:var(--t2)}
+/* API Key */
+.apikey-card{padding:1.5rem}
+.apikey-card h2{font-size:16px;font-weight:500;margin-bottom:.5rem}
+.apikey-card p{font-size:13px;color:var(--t2);line-height:1.65;margin-bottom:1rem}
+.apikey-input{width:100%;padding:10px 14px;border:1px solid var(--bd2);border-radius:var(--r8);font-size:14px;font-family:monospace;background:var(--input);color:var(--t1);outline:none;margin-bottom:.75rem}
+.apikey-input:focus{border-color:var(--green)}
+.apikey-note{font-size:11px;color:var(--t3);line-height:1.7;margin-top:.75rem}
+.apikey-note a{color:var(--gd);text-decoration:none}
+.apikey-note a:hover{text-decoration:underline}
+.steps-list{counter-reset:step;list-style:none;margin:.6rem 0 .9rem}
+.steps-list li{counter-increment:step;display:flex;gap:10px;align-items:flex-start;font-size:13px;color:var(--t2);padding:.4rem 0;border-bottom:1px solid var(--bd)}
+.steps-list li:last-child{border-bottom:none}
+.steps-list li::before{content:counter(step);min-width:22px;height:22px;background:var(--green);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-top:1px;flex-shrink:0}
+/* Misc */
+.tip-row{display:flex;align-items:flex-start;gap:8px;font-size:13px;line-height:1.65;color:var(--t2)}
+.tip-row strong{color:var(--t1);font-weight:500}
+.loading-ring{width:44px;height:44px;border:3px solid var(--bd2);border-top-color:var(--green);border-radius:50%;animation:spin .8s linear infinite;margin:0 auto 1.25rem}
+.spinner{display:inline-block;width:15px;height:15px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .65s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+code{background:var(--muted);padding:2px 6px;border-radius:4px;font-size:12px}
+button:focus-visible,select:focus-visible,textarea:focus-visible,input:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+</style>
+</head>
+<body>
+<div class="shell">
+  <nav class="nav">
+    <div class="nav-brand">
+      <div class="nav-icon">🌍</div>
+      <div>
+        <div class="nav-title">Daily Language Trainer</div>
+        <div class="nav-sub">多語新聞聽說訓練</div>
+      </div>
+    </div>
+    <div class="streak">🔥 <span id="streakEl">0</span> 天</div>
+  </nav>
+  <div id="progWrap" style="display:none">
+    <div class="prog-wrap">
+      <div class="prog-steps" id="progSteps"></div>
+      <div class="prog-meta"><span id="progLabel"></span><span id="progPct"></span></div>
+    </div>
+  </div>
+  <main id="main"></main>
+</div>
+
+<div class="word-popup" id="wordPopup">
+  <button class="word-popup-close" onclick="closeWordPopup()">✕</button>
+  <div class="word-popup-word" id="wpWord"></div>
+  <div class="word-popup-pos" id="wpPos"></div>
+  <div id="wpDef"></div>
+</div>
+
+<script>
+/* ══════════════════════════════════════
+   CONFIG — Gemini API
+══════════════════════════════════════ */
+const GEMINI_MODEL = "gemini-2.5-flash-lite";
+const GEMINI_API_BASE = "https://generativelanguage.googleapis.com/v1beta/models/";
+
+const LANGS = {
+  en: { id: "en", name: "🇺🇸 英文", code: "en-US", promptName: "English" },
+  ja: { id: "ja", name: "🇯🇵 日語", code: "ja-JP", promptName: "Japanese" },
+  ko: { id: "ko", name: "🇰🇷 韓語", code: "ko-KR", promptName: "Korean" },
+  th: { id: "th", name: "🇹🇭 泰語", code: "th-TH", promptName: "Thai" },
+  vi: { id: "vi", name: "🇻🇳 越南語", code: "vi-VN", promptName: "Vietnamese" }
+};
+
+const PHASES = ["source","process","read","vocab","speak_0","speak_1","speak_2","review","done"];
+const PHASE_LABEL = {source:"選擇來源",read:"閱讀聆聽",vocab:"單字",speak_0:"問題1",speak_1:"問題2",speak_2:"問題3",review:"總結",done:"完成"};
+const PHASE_PCT   = {source:0,process:10,read:25,vocab:42,speak_0:57,speak_1:70,speak_2:83,review:95,done:100};
+
+/* ══════════════════════════════════════ STATE ══════════════════════════════════════ */
+const S = {
+  phase:"apikey", apiKey:"", lang:"en",
+  sourceType:"url", sourceUrl:"", pdfFile:null, pdfName:"",
+  lesson:null,
+  currentQ:0, answers:[], feedbacks:[],
+  speechRate:0.85,
+  isRecording:false, recTimer:null, recSeconds:0,
+  streak:0, loadError:null,
+};
+
+/* ══════════════════════════════════════ PERSIST ══════════════════════════════════════ */
+function loadPersist(){
+  try{
+    S.apiKey=localStorage.getItem("det_gkey")||"";
+    S.lang=localStorage.getItem("det_lang")||"en";
+    if(!LANGS[S.lang]) S.lang="en";
+    S.streak=parseInt(localStorage.getItem("det_streak")||"0");
+    if(S.apiKey) S.phase="source";
+  }catch(e){}
+}
+function savePersist(){ 
+  try{
+    localStorage.setItem("det_gkey",S.apiKey);
+    localStorage.setItem("det_lang",S.lang);
+  }catch(e){} 
+}
+function markDone(){
+  try{
+    const today=new Date().toISOString().slice(0,10);
+    const last=localStorage.getItem("det_last")||"";
+    const yest=new Date(Date.now()-86400000).toISOString().slice(0,10);
+    S.streak=last===yest?S.streak+1:1;
+    localStorage.setItem("det_last",today);
+    localStorage.setItem("det_streak",S.streak);
+    document.getElementById("streakEl").textContent=S.streak;
+  }catch(e){}
+}
+
+window.setLang = function(langId) {
+  S.lang = langId;
+  savePersist();
+  render();
+};
+
+/* ══════════════════════════════════════ PROGRESS ══════════════════════════════════════ */
+function updateProg(){
+  const wrap=document.getElementById("progWrap");
+  const ph=S.phase==="speak"?`speak_${S.currentQ}`:S.phase;
+  if(!PHASES.includes(ph)||["source","process","apikey","error"].includes(ph)){wrap.style.display="none";return;}
+  wrap.style.display="block";
+  const vis=["read","vocab","speak_0","speak_1","speak_2","review","done"];
+  const cur=vis.indexOf(ph);
+  document.getElementById("progSteps").innerHTML=vis.map((_,i)=>{
+    const cls=i<cur?"done":i===cur?"active":"";
+    return `<div class="step-pill ${cls}"></div>`;
+  }).join("");
+  document.getElementById("progLabel").textContent=PHASE_LABEL[ph]||"";
+  document.getElementById("progPct").textContent=(PHASE_PCT[ph]||0)+"%";
+}
+
+/* ══════════════════════════════════════ TTS ══════════════════════════════════════ */
+function speak(text,onEnd){
+  if(!window.speechSynthesis)return;
+  window.speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang=LANGS[S.lang].code;
+  u.rate=S.speechRate;
+  if(onEnd)u.onend=onEnd;
+  window.speechSynthesis.speak(u);
+}
+function stopSpeak(){window.speechSynthesis?.cancel();}
+
+/* ══════════════════════════════════════ GEMINI API ══════════════════════════════════════ */
+async function gemini(prompt, maxTokens=2000, isJson=false){
+  const url=`${GEMINI_API_BASE}${GEMINI_MODEL}:generateContent?key=${S.apiKey}`;
+  const body={
+    contents:[{parts:[{text:prompt}]}],
+    generationConfig:{maxOutputTokens:maxTokens,temperature:0.4},
+  };
+  
+  if (isJson) body.generationConfig.responseMimeType = "application/json";
+
+  const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+  if(!r.ok){
+    const e=await r.json().catch(()=>({}));
+    let errMsg = e?.error?.message||`HTTP ${r.status}`;
+    if(errMsg.includes("high demand") || errMsg.includes("overloaded")) {
+       errMsg = "⚠️ 目前 Google AI 伺服器負載較高 (High Demand)，請點擊下方「返回」並稍等幾秒後再試一次！";
+    }
+    throw new Error(errMsg);
+  }
+  
+  const d=await r.json();
+  if(d.candidates?.[0]?.finishReason === 'SAFETY') {
+    throw new Error("⚠️ API 安全審查機制攔截了此內容，請更換另一篇新聞測試。");
+  }
+
+  const text = d.candidates?.[0]?.content?.parts?.[0]?.text||"";
+  if(!text) throw new Error("AI 回傳了空白內容，請稍後再試。");
+  return text;
+}
+
+async function geminiJSON(prompt, maxTokens=2000){
+  const raw = await gemini(prompt, maxTokens, true);
+  try { return JSON.parse(raw); } 
+  catch(e) {
+    const match = raw.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
+    if(match) { try { return JSON.parse(match[0]); } catch(err) {} }
+    throw new Error("解析 AI 回傳的資料失敗，請再試一次。");
+  }
+}
+
+/* ══════════════════════════════════════ FETCH URL (Jina) ══════════════════════════════════════ */
+async function fetchUrl(url){
+  const r=await fetch(`https://r.jina.ai/${url}`,{headers:{"Accept":"text/plain","X-No-Cache":"true"}});
+  if(!r.ok)throw new Error("無法取得網頁內容，請確認連結是否正確");
+  const text=await r.text();
+  if(text.length<100)throw new Error("內容太短，可能是登入牆或受限頁面");
+  return text.slice(0,7000);
+}
+
+/* ══════════════════════════════════════ PDF → TEXT ══════════════════════════════════════ */
+async function readPdf(file){
+  return new Promise((resolve,reject)=>{
+    const reader=new FileReader();
+    reader.onload=async e=>{
+      try{
+        const base64=btoa(new Uint8Array(e.target.result).reduce((d,b)=>d+String.fromCharCode(b),""));
+        const url=`${GEMINI_API_BASE}${GEMINI_MODEL}:generateContent?key=${S.apiKey}`;
+        const body={contents:[{parts:[
+          {inline_data:{mime_type:"application/pdf",data:base64}},
+          {text:"Extract all the main text content from this PDF. Return only the article text, no formatting notes."}
+        ]}],generationConfig:{maxOutputTokens:3000}};
+        const r=await fetch(url,{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify(body)});
+        if(!r.ok){
+          const e2=await r.json().catch(()=>({}));
+          let errMsg = e2?.error?.message||`HTTP ${r.status}`;
+          if(errMsg.includes("high demand") || errMsg.includes("overloaded")) errMsg = "⚠️ 目前 Google AI 伺服器負載較高，請稍等幾秒後重試！";
+          throw new Error(errMsg);
+        }
+        const d=await r.json();
+        if(d.candidates?.[0]?.finishReason === 'SAFETY') throw new Error("⚠️ API 安全審查機制攔截了此 PDF 內容。");
+        const text = d.candidates?.[0]?.content?.parts?.[0]?.text||"";
+        if(!text) throw new Error("無法萃取出有效的文字內容");
+        resolve(text);
+      }catch(err){reject(err);}
+    };
+    reader.onerror=()=>reject(new Error("PDF 讀取失敗"));
+    reader.readAsArrayBuffer(file);
+  });
+}
+
+/* ══════════════════════════════════════ PROCESS → LESSON ══════════════════════════════════════ */
+async function processContent(rawText){
+  S.phase="process"; S.loadError=null; render();
+  const langName = LANGS[S.lang].promptName;
+  try{
+    const parsed=await geminiJSON(
+`You are an expert ${langName} teacher. Create a 30-minute lesson for A2-B1 beginners from this article.
+Translate/Adapt the content into ${langName} if it is in another language, or just simplify it if it is already in ${langName}.
+Return ONLY valid JSON:
+
+SOURCE:
+${rawText.slice(0,5500)}
+
+JSON structure:
+{
+  "topic": "主題標籤（中文2-4字）",
+  "headline": "Simplified headline in ${langName} (max 15 words)",
+  "summary": "One sentence summary in simple ${langName} (max 20 words)",
+  "body_sentences": [
+    "Simple ${langName} sentence (max 20 words each) — write 8 sentences total"
+  ],
+  "vocabulary": [
+    {"word":"key word in ${langName}","phonetic":"Pronunciation guide (e.g., Romaji/Pinyin/IPA)","pos":"noun/verb/etc","meaning":"中文解釋","example":"Simple example sentence in ${langName}"},
+    ... (total 6 words)
+  ],
+  "questions": [
+    {"q":"Simple factual/reaction question about the article in ${langName}","hint":"中文提示：這題問什麼，怎麼回答","example":"Model answer in simple ${langName} (1-2 sentences)"},
+    {"q":"Personal experience question related to topic in ${langName}","hint":"中文提示","example":"Model answer"},
+    {"q":"Opinion or thinking question in ${langName}","hint":"中文提示","example":"Model answer"}
+  ]
+}`,2000);
+    if(!parsed.body_sentences||!parsed.questions||parsed.questions.length<3)throw new Error("AI 回傳格式不完整，請重試");
+    S.lesson=parsed;
+    S.phase="read";
+  }catch(e){
+    S.loadError=e.message||"未知錯誤";
+    S.phase="error";
+  }
+  render();
+}
+
+/* ══════════════════════════════════════ FEEDBACK ══════════════════════════════════════ */
+async function getFeedback(question,answer){
+  const langName = LANGS[S.lang].promptName;
+  try{
+    return await geminiJSON(
+`You are a warm ${langName} teacher evaluating a student's spoken answer.
+Return ONLY valid JSON (no markdown):
+
+Question: ${question}
+Student answer: ${answer}
+
+{
+  "score_fluency": 1-10,
+  "score_grammar": 1-10,
+  "score_vocabulary": 1-10,
+  "praise": "One encouraging sentence in ${langName} or Chinese",
+  "errors": [
+    {"original":"what they said wrong","correction":"correct version in ${langName}","explanation":"中文說明（15字內）"}
+  ],
+  "tip": "One improvement tip in Chinese (25字內)",
+  "better_version": "Natural improved version of their answer in simple ${langName} (2-3 sentences)"
+}
+(errors array: up to 3 most important mistakes. If no errors, return empty array [])`,800);
+  }catch(e){
+    return{score_fluency:7,score_grammar:7,score_vocabulary:7,
+      praise:"Good effort! Keep practicing!",errors:[],
+      tip:"試著用更完整的句子，加上原因或例子。",
+      better_version:answer};
+  }
+}
+
+/* ══════════════════════════════════════ WORD POPUP ══════════════════════════════════════ */
+async function showWordPopup(word,x,y){
+  const popup=document.getElementById("wordPopup");
+  document.getElementById("wpWord").textContent=word;
+  document.getElementById("wpPos").textContent="查詢中⋯";
+  document.getElementById("wpDef").textContent="";
+  popup.style.display="block";
+  const pw=280;
+  let lx=x-pw/2;
+  if(lx<8)lx=8;
+  if(lx+pw>window.innerWidth-8)lx=window.innerWidth-pw-8;
+  popup.style.left=lx+"px";
+  popup.style.top=(y+window.scrollY+12)+"px";
+  speak(word);
+  try{
+    const voc=S.lesson?.vocabulary?.find(v=>v.word.toLowerCase()===word.toLowerCase());
+    if(voc){
+      document.getElementById("wpPos").textContent=`${voc.phonetic||""} ${voc.pos||""}`.trim();
+      document.getElementById("wpDef").innerHTML=`<div style="margin-bottom:5px;font-weight:500">${voc.meaning}</div><div style="font-size:12px;color:var(--t3);font-style:italic">${voc.example}</div>`;
+    }else{
+      const langName = LANGS[S.lang].promptName;
+      const d=await geminiJSON(`Define the ${langName} word "${word}" for a learner. Return ONLY JSON:
+{"phonetic":"pronunciation guide","pos":"noun/verb/etc","meaning":"中文解釋（簡短）","example":"One short example sentence in ${langName}"}`,300);
+      document.getElementById("wpPos").textContent=`${d.phonetic||""} ${d.pos||""}`.trim();
+      document.getElementById("wpDef").innerHTML=`<div style="margin-bottom:5px;font-weight:500">${d.meaning}</div><div style="font-size:12px;color:var(--t3);font-style:italic">${d.example}</div>`;
+    }
+  }catch(e){
+    document.getElementById("wpPos").textContent="";
+    document.getElementById("wpDef").textContent="查詢失敗，請稍後再試";
+  }
+}
+function closeWordPopup(){document.getElementById("wordPopup").style.display="none";}
+document.addEventListener("click",e=>{
+  const p=document.getElementById("wordPopup");
+  if(!p.contains(e.target)&&!e.target.classList.contains("word-hl"))p.style.display="none";
+});
+window.onWordClick=function(e,word){
+  e.stopPropagation();
+  const r=e.target.getBoundingClientRect();
+  showWordPopup(word,r.left+r.width/2,r.bottom);
+};
+
+/* ══════════════════════════════════════ WEB SPEECH (STT) ══════════════════════════════════════ */
+let wsRec=null,wsTranscript="",wsRunning=false;
+function startWebSpeech(onStopCallback){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR) return false;
+  try {
+    wsRec=new SR();
+    wsRec.lang=LANGS[S.lang].code;
+    wsRec.continuous=true;
+    wsRec.interimResults=true;
+    wsTranscript="";wsRunning=true;
+    
+    wsRec.onresult=e=>{
+      let final="",interim="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        const t=e.results[i][0].transcript;
+        if(e.results[i].isFinal)final+=t+" ";else interim+=t;
+      }
+      wsTranscript+=final;
+      const box=document.getElementById("liveTranscript");
+      if(box)box.value=(wsTranscript+interim).trim();
+    };
+    
+    // 錯誤偵測強化
+    wsRec.onerror=e=>{
+      if(e.error === 'not-allowed' || e.error === 'service-not-allowed') {
+        alert("❌ 瀏覽器阻擋了麥克風！\n1. 請確認網址是 https 開頭。\n2. 請在網址列左側允許麥克風權限。");
+        if(onStopCallback) onStopCallback(); // 發生錯誤時還原 UI 按鈕狀態
+      }
+    };
+    
+    wsRec.onend=()=>{if(wsRunning)wsRec.start();};
+    wsRec.start();
+    return true;
+  } catch(err) {
+    return false;
+  }
+}
+
+function stopWebSpeech(){
+  wsRunning=false;
+  if(wsRec){wsRec.onend=null;wsRec.stop();wsRec=null;}
+  return wsTranscript.trim();
+}
+
+/* ══════════════════════════════════════ RENDER ══════════════════════════════════════ */
+function render(){
+  updateProg();
+  document.getElementById("streakEl").textContent=S.streak||0;
+  const el=document.getElementById("main");
+  const map={apikey:rApiKey,source:rSource,process:rProcess,error:rError,
+    read:rRead,vocab:rVocab,speak:rSpeak,review:rReview,done:rDone};
+  el.innerHTML=(map[S.phase]||rSource)();
+  bindAll();
+}
+
+/* ─── API Key ─── */
+function rApiKey(){
+  return `<div class="card apikey-card">
+  <h2>🔑 設定 Gemini API Key（完全免費）</h2>
+  <p>這個應用程式使用 Google Gemini AI 分析文章、出題、批改口說。<br>
+  Gemini API 有<strong style="color:var(--gd)">每日免費額度</strong>，練習外語完全不用付費！</p>
+  <ol class="steps-list">
+    <li>前往 <a href="https://aistudio.google.com/apikey" target="_blank">aistudio.google.com/apikey</a>（用 Google 帳號登入）</li>
+    <li>點「Create API key」→ 複製 Key</li>
+    <li>貼到下方輸入框，按儲存</li>
+  </ol>
+  <input class="apikey-input" id="apikeyInp" type="password" placeholder="AIza…" value="${S.apiKey}">
+  <button class="btn btn-primary" style="width:100%" id="apikeyBtn">儲存並開始使用</button>
+</div>`;
+}
+
+/* ─── Source ─── */
+function rSource(){
+  const langHtml = Object.values(LANGS).map(l => 
+    `<button class="lang-tab ${S.lang===l.id?'active':''}" onclick="setLang('${l.id}')">${l.name}</button>`
+  ).join('');
+
+  return `<div class="card">
+  <div style="font-size:15px;font-weight:600;margin-bottom:1rem;color:var(--t1)">🌐 第一步：選擇要訓練的語言</div>
+  <div class="lang-tabs">${langHtml}</div>
+  <hr style="border:none;border-top:1px solid var(--bd);margin:1rem 0 1.25rem">
+  
+  <div style="font-size:15px;font-weight:600;margin-bottom:1rem;color:var(--t1)">📌 第二步：提供素材 (新聞、文章或教材)</div>
+  <div class="source-tabs">
+    <button class="tab-btn ${S.sourceType==="url"?"active":""}" id="tabUrl">🔗 貼上網址</button>
+    <button class="tab-btn ${S.sourceType==="pdf"?"active":""}" id="tabPdf">📄 上傳 PDF</button>
+  </div>
+  <div id="urlPanel" style="display:${S.sourceType==="url"?"block":"none"}">
+    <div style="font-size:13px;color:var(--t2);margin-bottom:.6rem">系統會自動將您貼上的任何語言內容轉換成目標語言的教材：</div>
+    <input class="url-input" id="urlInp" type="url" placeholder="https://..." value="${S.sourceUrl}">
+  </div>
+  <div id="pdfPanel" style="display:${S.sourceType==="pdf"?"block":"none"}">
+    <label class="upload-zone" id="uploadZone">
+      <input type="file" id="pdfFile" accept=".pdf">
+      <div style="font-size:32px;margin-bottom:.5rem">📄</div>
+      <div>點擊選擇 PDF，或拖放至此</div>
+      ${S.pdfName?`<div class="upload-filename">✅ ${S.pdfName}</div>`:""}
+    </label>
+  </div>
+</div>
+<div class="btn-row">
+  <button class="btn btn-ghost" id="btnChangeKey">⚙️ 換 Key</button>
+  <button class="btn btn-primary" id="btnProcess" ${!S.sourceUrl&&!S.pdfName?"disabled":""}>分析教材，開始訓練 →</button>
+</div>`;
+}
+
+/* ─── Process ─── */
+function rProcess(){
+  return `<div class="card" style="text-align:center;padding:3rem 1.5rem">
+  <div class="loading-ring"></div>
+  <div style="font-size:15px;color:var(--t2);margin-bottom:1rem">AI 正在編製專屬的 ${LANGS[S.lang].name} 教材⋯</div>
+  <div style="font-size:13px;color:var(--t3);line-height:1.8">內容轉換 → 挑選單字 → 設計問題<br>約需 10–20 秒</div>
+</div>`;
+}
+
+/* ─── Error ─── */
+function rError(){
+  return `<div class="card" style="text-align:center;padding:2rem 1.5rem">
+  <div style="font-size:40px;margin-bottom:1rem">⚠️</div>
+  <div style="font-size:16px;font-weight:500;margin-bottom:.5rem">發生錯誤</div>
+  <div style="font-size:13px;color:var(--t2);line-height:1.7;margin-bottom:1.25rem">
+    <code style="background:var(--muted);padding:3px 8px;border-radius:6px;word-break:break-all">${S.loadError||"未知錯誤"}</code>
+  </div>
+  <div class="btn-row">
+    <button class="btn btn-ghost" id="btnBackSource">← 返回</button>
+    <button class="btn btn-primary" id="btnErrKey">⚙️ 換 API Key</button>
+  </div>
+</div>`;
+}
+
+/* ─── Read ─── */
+function rRead(){
+  const l=S.lesson;
+  function wrapWords(s){
+    return s.replace(/([^\s\p{P}]+)/gu,w=>`<span class="word-hl" onclick="onWordClick(event,'${w.replace(/'/g,"\\'")}')">${w}</span>`);
+  }
+  const body=(l.body_sentences||[]).map(s=>`<p style="margin-bottom:.65rem">${wrapWords(s)}</p>`).join("");
+  return `
+<span class="badge badge-green">📖 第一階段：閱讀與聆聽</span>
+<div class="card">
+  <div class="article-eyebrow">${l.topic||""}</div>
+  <div class="article-headline">${l.headline}</div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:1rem;padding:.6rem .8rem;background:var(--muted);border-radius:var(--r8)">
+    <strong style="color:var(--t1)">📌 摘要：</strong>${l.summary||""}
+  </div>
+  <div class="article-body">${body}</div>
+  <div class="tts-bar">
+    <button class="btn btn-primary btn-sm" id="btnReadAll">▶ 全文朗讀</button>
+    <button class="btn btn-ghost btn-sm" id="btnStopRead">⏹ 停止</button>
+    <select class="speed-sel" id="speedSel">
+      <option value="0.65">很慢</option>
+      <option value="0.82" selected>慢</option>
+      <option value="1.0">正常</option>
+      <option value="1.2">快</option>
+    </select>
+  </div>
+</div>
+<div class="card-muted">
+  <div class="tip-row">💡 <span><strong>技巧：</strong>先聽一遍朗讀，再跟著大聲念。點任何<span style="border-bottom:1.5px dashed var(--green);padding:0 2px">單字</span>可查詢發音與中文。</span></div>
+</div>
+<div class="btn-row">
+  <button class="btn btn-ghost" id="btnBackSrc">← 換教材</button>
+  <button class="btn btn-primary" id="btnGoVocab">學習單字 →</button>
+</div>`;
+}
+
+/* ─── Vocab ─── */
+function rVocab(){
+  const vocs=S.lesson?.vocabulary||[];
+  return `
+<span class="badge badge-blue">📚 第二階段：關鍵單字</span>
+<div class="card">
+  <div style="font-size:14px;font-weight:500;margin-bottom:1rem">本文 6 個重要單字（點擊聽發音）</div>
+  ${vocs.map((v,i)=>`
+  <div style="border-bottom:${i<vocs.length-1?"1px solid var(--bd)":"none"};padding:.85rem 0;${i===0?"padding-top:0":""}">
+    <div style="display:flex;align-items:baseline;gap:8px;margin-bottom:4px;flex-wrap:wrap">
+      <span style="font-size:17px;font-weight:600">${v.word}</span>
+      <span style="font-size:12px;color:var(--t3)">${v.phonetic||""}</span>
+      <span style="font-size:11px;background:var(--muted);padding:2px 8px;border-radius:99px;color:var(--t2)">${v.pos||""}</span>
+      <button class="btn btn-ghost btn-sm" style="padding:4px 10px;font-size:12px;margin-left:auto" onclick="speak('${v.word.replace(/'/g,"")}')">🔊</button>
+    </div>
+    <div style="font-size:14px;font-weight:500;color:var(--gd);margin-bottom:3px">${v.meaning}</div>
+    <div style="font-size:13px;color:var(--t2);font-style:italic">${v.example}</div>
+  </div>`).join("")}
+</div>
+<div class="btn-row">
+  <button class="btn btn-ghost" id="btnBackRead">← 回文章</button>
+  <button class="btn btn-primary" id="btnGoSpeak">開始口說練習 →</button>
+</div>`;
+}
+
+/* ─── Speak ─── */
+function rSpeak(){
+  const qi=S.currentQ;
+  const q=S.lesson?.questions?.[qi];
+  if(!q)return"";
+  const fb=S.feedbacks[qi];
+  return `
+<span class="badge badge-blue">🎤 第三階段：口說問答（${qi+1}/3）</span>
+<div class="card card-left">
+  <div class="q-num">問題 ${qi+1} / 3</div>
+  <div class="q-text">${q.q}</div>
+  <div class="q-hint">${q.hint}</div>
+  <div class="example-label">參考句型（點選填入）：</div>
+  <button class="example-chip" id="btnExample">💬 ${q.example}</button>
+  <div style="margin-top:.75rem">
+    <button class="btn btn-ghost btn-sm" id="btnSpeakQ">🔊 再聽一次題目</button>
+  </div>
+</div>
+${!fb?`
+<div class="card">
+  <div class="mic-section" id="micSection">
+    <button class="mic-btn idle" id="micBtn">🎙️</button>
+    <div class="mic-status" id="micStatus">點擊麥克風開始錄音，或直接在下方打字<br><span style="font-size:11px;color:#ba7517">(若麥克風沒反應，建議直接點擊下方文字框，用手機鍵盤的語音輸入！)</span></div>
+    <div id="micTimerWrap" style="display:none"><div class="mic-timer" id="micTimer">00:00</div></div>
+  </div>
+  <textarea class="transcript-box" id="liveTranscript" placeholder="在這裡用 ${LANGS[S.lang].name.split(' ')[1]} 回答..." rows="4"></textarea>
+  <div class="btn-row">
+    <button class="btn btn-ghost" id="btnClear">🗑 清除</button>
+    <button class="btn btn-primary" id="btnSubmit">送出，AI 批改 →</button>
+  </div>
+</div>`:""}
+${fb?rFbBlock(fb,qi):""}`;
+}
+
+function rFbBlock(fb,qi){
+  const isLast=qi===2;
+  const errHtml=(fb.errors||[]).length>0
+    ?`<p>🔧 <strong>錯誤更正：</strong></p>
+      ${fb.errors.map(e=>`<div style="margin:.4rem 0 .6rem;padding:.6rem .8rem;background:var(--muted);border-radius:var(--r8);font-size:13px">
+        <span style="color:var(--red);text-decoration:line-through">${e.original}</span>
+        → <span style="color:var(--gd);font-weight:500">${e.correction}</span>
+        <div style="color:var(--t2);font-size:12px;margin-top:2px">${e.explanation}</div>
+      </div>`).join("")}`:
+    `<p>✨ 沒有明顯錯誤，繼續保持！</p>`;
+
+  return `
+<div class="fb-wrap">
+  <div class="fb-head">🤖 AI 老師批改結果</div>
+  <div class="fb-body">
+    <p>✅ ${fb.praise}</p>
+    ${errHtml}
+    <p>💡 <strong>改進建議：</strong>${fb.tip}</p>
+    <p>📝 <strong>更自然的說法：</strong><span class="fb-better">"${fb.better_version}"</span></p>
+    <button class="btn btn-ghost btn-sm" style="margin-top:.5rem"
+      onclick="speak('${(fb.better_version||"").replace(/'/g,"").replace(/"/g,"")}')">🔊 聽更好的說法</button>
+  </div>
+  <div class="score-grid">
+    <div class="score-cell"><div class="score-val c-green">${fb.score_fluency}</div><div class="score-lbl">流利度</div></div>
+    <div class="score-cell"><div class="score-val c-blue">${fb.score_grammar}</div><div class="score-lbl">文法</div></div>
+    <div class="score-cell"><div class="score-val c-amber">${fb.score_vocabulary}</div><div class="score-lbl">詞彙</div></div>
+  </div>
+</div>
+<div class="btn-row">
+  ${isLast
+    ?`<button class="btn btn-primary" id="btnGoReview">查看今日總結 →</button>`
+    :`<button class="btn btn-ghost" id="btnRedoQ">重新回答</button>
+      <button class="btn btn-primary" id="btnNextQ">下一題 →</button>`}
+</div>`;
+}
+
+/* ─── Review ─── */
+function rReview(){
+  const avg=k=>S.feedbacks.length?Math.round(S.feedbacks.map(f=>f[k]||0).reduce((a,b)=>a+b,0)/S.feedbacks.length):"--";
+  return `
+<span class="badge badge-amber">📊 今日練習總結</span>
+<div class="card">
+  <div style="font-size:15px;font-weight:500;margin-bottom:.9rem">整體表現</div>
+  <div class="score-grid">
+    <div class="score-cell"><div class="score-val c-green">${avg("score_fluency")}</div><div class="score-lbl">流利度</div></div>
+    <div class="score-cell"><div class="score-val c-blue">${avg("score_grammar")}</div><div class="score-lbl">文法</div></div>
+    <div class="score-cell"><div class="score-val c-amber">${avg("score_vocabulary")}</div><div class="score-lbl">詞彙</div></div>
+  </div>
+</div>
+${(S.lesson?.questions||[]).map((q,i)=>{
+  const fb=S.feedbacks[i]||{};
+  return `<div class="review-card">
+    <div style="font-size:11px;color:var(--t3);margin-bottom:3px">問題 ${i+1}</div>
+    <div style="font-size:14px;font-weight:500;margin-bottom:5px">${q.q}</div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:4px">你說：${S.answers[i]||"（未作答）"}</div>
+    ${fb.better_version?`<div style="font-size:13px;color:var(--gd);font-style:italic">更好：「${fb.better_version}」</div>`:""}
+  </div>`;
+}).join("")}
+<div class="btn-row">
+  <button class="btn btn-ghost" id="btnRedoAll">重新練習這篇</button>
+  <button class="btn btn-primary" id="btnFinish">完成今日訓練 ✓</button>
+</div>`;
+}
+
+/* ─── Done ─── */
+function rDone(){
+  const avg=k=>S.feedbacks.length?Math.round(S.feedbacks.map(f=>f[k]||0).reduce((a,b)=>a+b,0)/S.feedbacks.length):"--";
+  return `<div class="card done-screen">
+  <div class="done-trophy">🎉</div>
+  <div class="done-title">今天做得很好！</div>
+  <div class="done-sub">完成今日的外語聽說訓練。<br>每天一篇，持續累積，外語一定進步！</div>
+  <div class="done-stats">
+    <div><div class="done-stat-val c-green">${avg("score_fluency")}</div><div class="done-stat-lbl">流利度</div></div>
+    <div><div class="done-stat-val c-blue">${avg("score_grammar")}</div><div class="done-stat-lbl">文法</div></div>
+    <div><div class="done-stat-val c-amber">${avg("score_vocabulary")}</div><div class="done-stat-lbl">詞彙</div></div>
+  </div>
+  <div style="font-size:13px;color:var(--t2);margin-bottom:1.25rem">🔥 已連續練習 <strong style="color:var(--amber)">${S.streak}</strong> 天！</div>
+  <button class="btn btn-primary" style="width:100%;padding:13px" id="btnNewDay">明天見 — 選新教材</button>
+</div>`;
+}
+
+/* ══════════════════════════════════════ EVENTS ══════════════════════════════════════ */
+function g(id){return document.getElementById(id);}
+
+function bindAll(){
+  /* API Key */
+  g("apikeyBtn")?.addEventListener("click",()=>{
+    const v=(g("apikeyInp")?.value||"").trim();
+    if(!v.startsWith("AIza")){alert("請輸入有效的 Gemini API Key（AIza 開頭）");return;}
+    S.apiKey=v;savePersist();S.phase="source";render();
+  });
+
+  /* Source */
+  g("tabUrl")?.addEventListener("click",()=>{S.sourceType="url";render();});
+  g("tabPdf")?.addEventListener("click",()=>{S.sourceType="pdf";render();});
+  g("btnChangeKey")?.addEventListener("click",()=>{S.phase="apikey";render();});
+
+  const urlInp=g("urlInp");
+  if(urlInp){
+    urlInp.addEventListener("input",()=>{
+      S.sourceUrl=urlInp.value.trim();
+      if(g("btnProcess"))g("btnProcess").disabled=!S.sourceUrl&&!S.pdfName;
+    });
+  }
+
+  const pdfFile=g("pdfFile");
+  if(pdfFile){
+    pdfFile.addEventListener("change",e=>{
+      const file=e.target.files[0];
+      if(!file)return;
+      S.pdfName=file.name;S.pdfFile=file;render();
+    });
+  }
+  const zone=g("uploadZone");
+  if(zone){
+    zone.addEventListener("dragover",e=>{e.preventDefault();zone.classList.add("drag");});
+    zone.addEventListener("dragleave",()=>zone.classList.remove("drag"));
+    zone.addEventListener("drop",e=>{
+      e.preventDefault();zone.classList.remove("drag");
+      const file=e.dataTransfer.files[0];
+      if(file?.type==="application/pdf"){S.pdfName=file.name;S.pdfFile=file;render();}
+    });
+  }
+
+  g("btnProcess")?.addEventListener("click",async()=>{
+    if(S.sourceType==="url"){
+      if(!S.sourceUrl)return;
+      S.phase="process";render();
+      try{const text=await fetchUrl(S.sourceUrl);await processContent(text);}
+      catch(e){S.loadError=e.message;S.phase="error";render();}
+    }else{
+      if(!S.pdfFile)return;
+      S.phase="process";render();
+      try{const text=await readPdf(S.pdfFile);await processContent(text);}
+      catch(e){S.loadError=e.message;S.phase="error";render();}
+    }
+  });
+
+  /* Error */
+  g("btnBackSource")?.addEventListener("click",()=>{S.phase="source";render();});
+  g("btnErrKey")?.addEventListener("click",()=>{S.phase="apikey";render();});
+
+  /* Read */
+  g("btnReadAll")?.addEventListener("click",()=>{
+    speak((S.lesson?.body_sentences||[]).join(" "));
+  });
+  g("btnStopRead")?.addEventListener("click",stopSpeak);
+  g("speedSel")?.addEventListener("change",e=>{S.speechRate=parseFloat(e.target.value);});
+  g("btnBackSrc")?.addEventListener("click",()=>{stopSpeak();S.phase="source";render();});
+  g("btnGoVocab")?.addEventListener("click",()=>{stopSpeak();S.phase="vocab";render();});
+
+  /* Vocab */
+  g("btnBackRead")?.addEventListener("click",()=>{S.phase="read";render();});
+  g("btnGoSpeak")?.addEventListener("click",()=>{
+    S.phase="speak";S.currentQ=0;render();bindSpeak();
+  });
+
+  /* Speak */
+  bindSpeak();
+
+  /* Review */
+  g("btnRedoAll")?.addEventListener("click",()=>{
+    S.answers=[];S.feedbacks=[];S.currentQ=0;S.phase="read";render();
+  });
+  g("btnFinish")?.addEventListener("click",()=>{markDone();S.phase="done";render();});
+
+  /* Done */
+  g("btnNewDay")?.addEventListener("click",()=>{
+    S.lesson=null;S.answers=[];S.feedbacks=[];S.currentQ=0;
+    S.sourceUrl="";S.pdfName="";S.pdfFile=null;S.phase="source";render();
+  });
+}
+
+function bindSpeak(){
+  const qi=S.currentQ;
+  const q=S.lesson?.questions?.[qi];
+  if(!q)return;
+
+  // Auto read question
+  setTimeout(()=>speak(q.q),350);
+
+  g("btnSpeakQ")?.addEventListener("click",()=>speak(q.q));
+  g("btnExample")?.addEventListener("click",()=>{
+    const box=g("liveTranscript");if(box)box.value=q.example;
+  });
+  g("btnClear")?.addEventListener("click",()=>{
+    const box=g("liveTranscript");if(box)box.value="";
+    wsTranscript="";
+  });
+
+  /* Mic */
+  const micBtn=g("micBtn");
+  if(micBtn){
+    micBtn.addEventListener("click",()=>{
+      if(!S.isRecording){
+        // Start recording
+        wsTranscript="";
+        // 將還原按鈕狀態的回呼函數傳入
+        const ok=startWebSpeech(() => {
+            S.isRecording=false;
+            clearInterval(S.recTimer);
+            micBtn.className="mic-btn idle";
+            micBtn.innerHTML="🎙️";
+            g("micStatus").innerHTML=`點擊麥克風開始錄音，或直接在下方打字<br><span style="font-size:11px;color:#ba7517">(若麥克風沒反應，建議直接點擊下方文字框，用手機鍵盤的語音輸入！)</span>`;
+            g("micTimerWrap").style.display="none";
+        });
+        
+        if(!ok){
+          g("micStatus").textContent="語音辨識不支援（請用 Chrome），請直接打字";
+          return;
+        }
+        S.isRecording=true;
+        micBtn.className="mic-btn recording";
+        micBtn.innerHTML="⏹️";
+        g("micStatus").innerHTML=`<div class="waveform">${"<div class='wave-bar'></div>".repeat(7)}</div><div style="margin-top:4px">錄音中⋯ 再按一次停止</div>`;
+        g("micTimerWrap").style.display="block";
+        S.recSeconds=0;
+        S.recTimer=setInterval(()=>{
+          S.recSeconds++;
+          const m=Math.floor(S.recSeconds/60).toString().padStart(2,"0");
+          const s=(S.recSeconds%60).toString().padStart(2,"0");
+          const te=g("micTimer");if(te)te.textContent=`${m}:${s}`;
+          if(S.recSeconds>=90){micBtn.click();}
+        },1000);
+      }else{
+        // Stop
+        clearInterval(S.recTimer);
+        S.isRecording=false;
+        const final=stopWebSpeech();
+        micBtn.className="mic-btn idle";
+        micBtn.innerHTML="🎙️";
+        g("micStatus").innerHTML=`錄音完成！確認文字後點「送出」。<br><span style="font-size:11px;color:#ba7517">(若麥克風沒反應，建議直接點擊下方文字框，用手機鍵盤的語音輸入！)</span>`;
+        g("micTimerWrap").style.display="none";
+        const box=g("liveTranscript");
+        if(box&&final&&!box.value)box.value=final;
+      }
+    });
+  }
+
+  /* Submit */
+  g("btnSubmit")?.addEventListener("click",async()=>{
+    stopWebSpeech();S.isRecording=false;clearInterval(S.recTimer);
+    const answer=(g("liveTranscript")?.value||"").trim();
+    if(!answer){alert("請先錄音或打字輸入你的回答！");return;}
+    const btn=g("btnSubmit");
+    btn.disabled=true;btn.innerHTML=`<span class="spinner"></span> AI 批改中⋯`;
+    S.answers[qi]=answer;
+    const fb=await getFeedback(q.q,answer);
+    S.feedbacks[qi]=fb;
+    render();bindSpeak();
+  });
+
+  g("btnRedoQ")?.addEventListener("click",()=>{
+    stopSpeak();S.feedbacks[qi]=null;S.answers[qi]="";render();bindSpeak();
+  });
+  g("btnNextQ")?.addEventListener("click",()=>{
+    stopSpeak();S.currentQ++;render();bindSpeak();
+  });
+  g("btnGoReview")?.addEventListener("click",()=>{stopSpeak();S.phase="review";render();});
+}
+
+/* ══════════════════════════════════════ INIT ══════════════════════════════════════ */
+loadPersist();
+render();
+</script>
+</body>
+</html>
